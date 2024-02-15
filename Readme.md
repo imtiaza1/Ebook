@@ -11,7 +11,7 @@ This project is an **online book management system** (eBook system) that allows 
 - **MySQL** for database management.
 - **Bootstrap** for responsive design.
 - **jQuery** for simplifying DOM manipulation.
-- **WOW.js** and **GSAP** for animations.
+- **WOW.js** and **GSAP** for animation.
 
 ---
 
@@ -29,8 +29,7 @@ This project is an **online book management system** (eBook system) that allows 
 🛠️ **Admin Panel**: An admin dashboard for managing books, users, reviews, and orders, including the ability to add new books, modify existing entries, and monitor user activity.  
 🔄 **Multiple Languages**: Browse books in various languages, supporting international audiences and diverse reading preferences.  
 📅 **Upcoming Releases**: Stay updated with new book releases and pre-order options.  
-📱 **Responsive Design**: Full compatibility across all devices, including desktops, tablets, and smartphones, ensuring a seamless browsing and purchasing experience everywhere.  
-
+📱 **Responsive Design**: Full compatibility across all devices, including desktops, tablets, and smartphones, ensuring a seamless browsing and purchasing experience everywhere.
 
 ---
 
