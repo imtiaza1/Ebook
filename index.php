@@ -200,9 +200,7 @@ require('includes/add-to-cart.php');
 	<div class="container">
 		<div class="section-head text-center">
 			<h2 class="title">Recomended For You</h2>
-			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-				labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-				laboris</p>
+			<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Repudiandae ab laudantium iusto nemo temporibus vitae provident! Exercitationem voluptas necessitatibus neque quidem itaque culpa sapiente quasi quia saepe, distinctio fuga magni</p>
 		</div>
 		<!-- Swiper -->
 		<div class="swiper-container swiper-two">
