@@ -4,38 +4,43 @@ require('includes/db.php');
 $error = false;
 $password_matched = false;
 if (isset($_POST['submit'])) {
-    $email = $_POST['email'];
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
-    // Check if the email exists in the database
-    $check_email = "SELECT * FROM users WHERE email='$email'";
-    $result_email = mysqli_query($conn, $check_email);
-    $result = mysqli_num_rows($result_email);
-    if ($result > 0) {
-        while ($row = mysqli_fetch_assoc($result_email)) {
-            // Verify hashed password
-            $checkPass = password_verify($password, $row['password']);
-            // $checkPass = $password == $row['password'];
-            if ($checkPass) {
-                // Password matches, set session and success flag
-                $_SESSION['email'] = $row['email'];
-                $success = true;
-                // JavaScript for redirection with delay
-                echo '<script>
-                    window.location.href = "index.php";
-                </script>';
-                exit(); // stop further execution
-            } else {
-                // Password does not match, set error flag
-                $password_matched = true;
-                break;
-            }
+
+    // Sanitize email input
+    $email = mysqli_real_escape_string($conn, $email);
+
+    // Prepare and execute query to prevent SQL injection
+    $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email = ?");
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result_email = mysqli_stmt_get_result($stmt);
+
+    if (mysqli_num_rows($result_email) > 0) {
+        $row = mysqli_fetch_assoc($result_email);
+
+        // Verify hashed password
+        if (password_verify($password, $row['password'])) {
+            // Login successful
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['user_id'] = $row['id']; // optionally store user ID
+            $success = true;
+
+            echo '<script>
+                window.location.href = "index.php";
+            </script>';
+            exit();
+        } else {
+            // Password doesn't match
+            $password_matched = true;
         }
     } else {
-        // Email not found in the database, set error flag
+        // Email not found
         $error = true;
     }
 }
 ?>
+
 <div class="page-content">
     <!-- inner page banner -->
     <div class="dz-bnr-inr overlay-secondary-dark dz-bnr-inr-sm" style="background-image:url(images/background/bg3.jpg);">
