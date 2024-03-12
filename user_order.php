@@ -37,38 +37,42 @@ include('includes/add-to-cart.php');
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                $user_id = $_SESSION['user_id'];
-                                $sql = mysqli_query($conn, "select * from orders where User_id=$user_id");
-                                while ($row = mysqli_fetch_assoc($sql)) {
-                                ?>
-                                    <tr>
-                                        <td class="product-item-img"><?php echo $row['OrderID']; ?></td>
-                                        <td class="product-item-name"><?php echo $row['OrderDate']; ?></td>
-                                        <td class="product-item-price">$<?php echo $row['Address']; ?></td>
-                                        <td class="product-item-price"> <?php echo $row['PaymentType']; ?></td>
-                                        <td>
-                                            <?php
-                                            if ($row['Status'] == 1) {
-                                            ?>
-                                                <p style="color: #1ed760;"> Paid</p>
-                                            <?php
-                                            } else {
-                                            ?>
-                                                <p style="color: orange;"> pending</p>
+    <?php
+    if (isset($_SESSION['user_id'])) {
+        $user_id = intval($_SESSION['user_id']); // ✅ secure against SQL injection
 
-                                            <?php
-                                            }
-                                            ?>
-                                        </td>
-                                        <td class="product-item-price">
-                                            <a href="order_details.php?od=<?php echo $row['OrderID']; ?>" class="btn btn-primary btnhover" type="button" name="submit">Details</a>
-                                        </td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
-                            </tbody>
+        // Use prepared statement (safer)
+        $stmt = mysqli_prepare($conn, "SELECT * FROM orders WHERE User_id = ?");
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        while ($row = mysqli_fetch_assoc($result)) {
+    ?>
+            <tr>
+                <td class="product-item-img"><?php echo htmlspecialchars($row['OrderID']); ?></td>
+                <td class="product-item-name"><?php echo htmlspecialchars($row['OrderDate']); ?></td>
+                <td class="product-item-price">$<?php echo htmlspecialchars($row['Address']); ?></td>
+                <td class="product-item-price"><?php echo htmlspecialchars($row['PaymentType']); ?></td>
+                <td>
+                    <?php if ($row['Status'] == 1): ?>
+                        <p style="color: #1ed760;">Paid</p>
+                    <?php else: ?>
+                        <p style="color: orange;">Pending</p>
+                    <?php endif; ?>
+                </td>
+                <td class="product-item-price">
+                    <a href="order_details.php?od=<?php echo urlencode($row['OrderID']); ?>" class="btn btn-primary btnhover" type="button">Details</a>
+                </td>
+            </tr>
+    <?php
+        }
+    } else {
+        echo "<tr><td colspan='6'>User not logged in.</td></tr>";
+    }
+    ?>
+</tbody>
+
                         </table>
                     </div>
                 </div>
