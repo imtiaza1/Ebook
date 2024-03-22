@@ -62,7 +62,7 @@ include('includes/add-to-cart.php');
                                 <?php
                                         }
                                     } else {
-                                        echo "No order details found.";
+                                        echo "No order details found!";
                                     }
                                 }
                                 ?>
