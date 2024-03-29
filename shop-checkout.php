@@ -7,63 +7,6 @@ if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     exit;
 }
 
-// require('stripe-php-master');
-// $publishKey = "pk_test_51Oybaa2MoApc11ih9bZIeS0ZtCxeoyvKbUKTCGXksXRHeNUnYWeDX8O6DaLv1SovMvucNdjn6WEVKunavdgi8POW00xarZmRzg";
-// $secretKey = "sk_test_51Oybaa2MoApc11ihu4a0N9IeryZPuyK8sIj8IsJZaQf4lzzbCFdnKAGkpYC46Rve4eYxuaHXLepg62V9rsNDZKqj00Beoh1Qh7";
-// // Check if the form is submitted
-// if ($_SERVER["REQUEST_METHOD"] == "POST") {
-//     // Retrieve form data
-//     $user_id = $_SESSION['user_id'];
-//     $country = $_POST['country'];
-//     $address = $_POST['address'];
-//     $city = $_POST['city'];
-//     $zipCode = $_POST['zip'];
-//     $email = $_POST['email'];
-//     $phone = $_POST['phone'];
-//     $paymentType = $_POST['cardType'];
-//     // Initialize total price variable
-//     $total = 0;
-//     // Calculate total price for all products in the cart
-//     foreach ($_SESSION['cart'] as $key => $value) {
-//         $total_price_per_product = $value['price'] * $value['qty'];
-//         $total += $total_price_per_product;
-//     }
-//     // Format the total price to 2 decimal places
-//     $price = number_format($total, 2);
-//     // SQL query to insert data into the database
-//     $sql = "INSERT INTO Orders (user_id, Country, Address, City, ZipCode, Email, Phone, PaymentType, total_price, Status) 
-//     VALUES ('$user_id', '$country', '$address', '$city', '$zipCode', '$email', '$phone', '$paymentType', '$price', 'Pending')";
-
-
-//     // Execute the SQL statement
-//     if (mysqli_query($conn, $sql)) {
-//         // Retrieve the last inserted order ID
-//         $order_id = mysqli_insert_id($conn);
-//         // Loop through each item in the cart and insert into order_details table
-//         foreach ($_SESSION['cart'] as $key => $value) {
-//             $product_id = $value['product_id'];
-//             $qty = $value['qty'];
-//             $price = $value['price'];
-//             $total_price = $qty * $price;
-//             // Insert product details into order_details table
-//             $insert_query = "INSERT INTO order_details (order_id, product_id, price, qty) 
-//             VALUES ('$order_id', '$product_id', '$total_price','$qty')";
-//             mysqli_query($conn, $insert_query);
-//         }
-//         // Display success message and redirect
-//         echo '<script>
-//         alert("Order placed successfully!");
-//         window.location.href = "user_order.php";
-//         </script>';
-
-//         // Clear cart session
-//         unset($_SESSION['cart']);
-//     } else {
-//         echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-//     }
-//     // Close the database connection
-//     mysqli_close($conn);
-// }
 ?>
 <?php
 
