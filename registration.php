@@ -2,53 +2,65 @@
 require('includes/header.php');
 require('includes/db.php');
 
+<?php
 $passwordNotMatch = false;
 $EmailError = false;
 $success = false;
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    require_once 'db_connection.php'; // Assuming you include DB connection here
+
     $name = mysqli_real_escape_string($conn, $_POST['username']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
     $cpassword = mysqli_real_escape_string($conn, $_POST['cpassword']);
 
     // Check if email already exists
-    $selectEmail = "SELECT * FROM users WHERE email='$email'";
-    $sql = mysqli_query($conn, $selectEmail);
-    $checkEmail = mysqli_num_rows($sql);
+    $selectEmail = "SELECT * FROM users WHERE email = ?";
+    $stmt = mysqli_prepare($conn, $selectEmail);
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $checkEmail = mysqli_num_rows($result);
 
     if ($checkEmail == 0) {
         // Check if passwords match
         if ($password === $cpassword) {
-            // Hash the password securely
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            // File upload for user image
-            $image_name = $_FILES["image"]["name"];
-            $image_tmp = $_FILES["image"]["tmp_name"];
-            $image_path = "../images/" . $image_name;
-            // Move uploaded image to the desired directory
-            move_uploaded_file($image_tmp, $image_path);
 
-            // Database entries
-            $sql = "INSERT INTO `users` (`image`, `name`, `email`, `password`, `registration_date`) 
-            VALUES ('$image_path', '$name', '$email', '$hashedPassword', current_timestamp())";
+            // Handle image upload
+            if (isset($_FILES["image"]) && $_FILES["image"]["error"] == 0) {
+                $image_name = basename($_FILES["image"]["name"]);
+                $image_tmp = $_FILES["image"]["tmp_name"];
+                $image_path = "../images/" . $image_name;
 
-            // Execute the query
-            if (mysqli_query($conn, $sql)) {
-                // Insertion successful
-                $success = true;
+                if (move_uploaded_file($image_tmp, $image_path)) {
+                    // Insert user data into database
+                    $insertQuery = "INSERT INTO users (image, name, email, password, registration_date) 
+                                    VALUES (?, ?, ?, ?, current_timestamp())";
+                    $stmt = mysqli_prepare($conn, $insertQuery);
+                    mysqli_stmt_bind_param($stmt, "ssss", $image_path, $name, $email, $hashedPassword);
+
+                    if (mysqli_stmt_execute($stmt)) {
+                        $success = true;
+                    } else {
+                        $error = "Database insertion error: " . mysqli_error($conn);
+                    }
+                } else {
+                    $error = "Failed to move uploaded file.";
+                }
             } else {
-                // Insertion failed
-                $error = "Error: " . mysqli_error($conn);
+                $error = "Image upload error.";
             }
         } else {
-            // Passwords don't match
             $passwordNotMatch = true;
         }
     } else {
-        // Email already exists
         $EmailError = true;
     }
 }
+?>
+
 
 
 ?>
