@@ -116,7 +116,7 @@ require('includes/add-to-cart.php');
                             <i class="fa-solid fa-leaf icon-cell"></i>
                         </div>
                         <div class="icon-content">
-                            <h2 class="dz-title counter m-b0">457</h2>
+                            <h2 class="dz-title counter m-b0">950</h2>
                             <p class="font-20">Famous Writers</p>
                         </div>
                     </div>
