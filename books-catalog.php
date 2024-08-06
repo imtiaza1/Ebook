@@ -94,7 +94,7 @@ require('includes/add-to-cart.php');
                             <i class="fa-solid fa-book icon-cell"></i>
                         </div>
                         <div class="icon-content">
-                            <h2 class="dz-title counter m-b0">50,672</h2>
+                            <h2 class="dz-title counter m-b0">60,672</h2>
                             <p class="font-20">Book Collections</p>
                         </div>
                     </div>
