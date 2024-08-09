@@ -1,27 +1,35 @@
 <?php
 require('includes/header.php');
 require('includes/add-to-cart.php');
-if (isset($_GET['book_id'])) {
-    $book_id = $_GET['book_id'];
-    $select_book = "SELECT * FROM books WHERE book_id='$book_id'";
-    $sql = mysqli_query($conn, $select_book);
-    $result = mysqli_num_rows($sql);
-    if ($result > 0) {
-        while ($row = mysqli_fetch_array($sql)) {
-            $book_image = $row['image'];
-            $book_id = $row['book_id'];
-            $book_author = $row['author'];
-            $book_title = $row['title'];
-            $book_desc = $row['description'];
-            $book_price = $row['price'];
-            $book_format = $row['format'];
-        }
+if (isset($_GET['book_id']) && is_numeric($_GET['book_id'])) {
+    $book_id = intval($_GET['book_id']); // ✅ sanitize & convert to integer
+
+    // Use prepared statement to prevent SQL injection
+    $stmt = mysqli_prepare($conn, "SELECT * FROM books WHERE book_id = ?");
+    mysqli_stmt_bind_param($stmt, "i", $book_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        // Fetch book data into variables
+        $book_image  = $row['image'];
+        $book_id     = $row['book_id'];
+        $book_author = $row['author'];
+        $book_title  = $row['title'];
+        $book_desc   = $row['description'];
+        $book_price  = $row['price'];
+        $book_format = $row['format'];
     } else {
+        // Redirect if no book found
         echo '<script>window.location.href = "index.php";</script>';
+        exit();
     }
 } else {
+    // Redirect if book_id is not provided or invalid
     echo '<script>window.location.href = "index.php";</script>';
+    exit();
 }
+
 
 ?>
 <div class="page-content bg-grey">
