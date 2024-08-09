@@ -84,7 +84,7 @@ require('includes/header.php');
                     <div class="faq-content-box">
                         <div class="section-head">
                             <h2 class="title">Managing Books</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit,  labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
                         </div>
                         <div class="faq-accordion">
                             <div class="accordion" id="accordionExample2">
