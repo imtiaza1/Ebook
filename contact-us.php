@@ -3,23 +3,33 @@ require('includes/header.php');
 require('includes/db.php');
 $success = false;
 // Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	if (isset($_POST['contact'])) {
-		// Retrieve form data
-		$name = $_POST['Name'];
-		$email = $_POST['Email'];
-		$phoneNumber = $_POST['PhoneNumber'];
-		$message = $_POST['Message'];
-		// Prepare SQL statement
-		$sql = "INSERT INTO contactmessages ( `Name`, `Email`, `Phone`, `Message`, `Timestamp`) VALUES ('$name', '$email', '$phoneNumber', '$message', current_timestamp())";
-		$result = mysqli_query($conn, $sql);
-		if ($result > 0) {
-			$success = true;
-		} else {
-			echo "Error: " . $sql . "<br>" . $conn;
-		}
-	}
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['contact'])) {
+    // Sanitize and validate input
+    $name        = trim($_POST['Name']);
+    $email       = trim($_POST['Email']);
+    $phoneNumber = trim($_POST['PhoneNumber']);
+    $message     = trim($_POST['Message']);
+
+    // Optional: Validate fields
+    if (!empty($name) && filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($phoneNumber) && !empty($message)) {
+        
+        // Use prepared statement to prevent SQL injection
+        $stmt = mysqli_prepare($conn, "INSERT INTO contactmessages (`Name`, `Email`, `Phone`, `Message`, `Timestamp`) VALUES (?, ?, ?, ?, current_timestamp())");
+        mysqli_stmt_bind_param($stmt, "ssss", $name, $email, $phoneNumber, $message);
+        
+        if (mysqli_stmt_execute($stmt)) {
+            $success = true;
+        } else {
+            echo "Database Error: " . mysqli_error($conn);
+        }
+
+    } else {
+        echo "<p class='text-danger'>Please fill all fields correctly.</p>";
+    }
 }
+?>
+
 ?>
 
 <div class="page-content">
