@@ -1,102 +1,36 @@
 <?php
-// Require the header file which contains the common header elements
-require('partials/_header.php');
+require('partials/_header.php');        // Header
+include('partials/_connection.php');    // DB connection
 
-// Include the file to establish a database connection
-include('partials/_connection.php');
+session_start(); // Start session
 
-// Start the session to maintain user login state
-session_start();
-
-// Check if the user is not logged in, redirect to the login page
+// Redirect if user not logged in
 if (!isset($_SESSION['username'])) {
-    header('location: login.php');
+    header('Location: login.php');
+    exit;
 }
 
-// Code to display the total count of books
-$sql = "SELECT COUNT(*) AS total_books FROM books";
-$result = mysqli_query($con, $sql);
-
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of books from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_books = $row['total_books'];
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
+// Helper function to run a count or sum query
+function getSingleValue($con, $query, $fieldName) {
+    $result = mysqli_query($con, $query);
+    if ($result && $row = mysqli_fetch_assoc($result)) {
+        return $row[$fieldName];
+    } else {
+        echo "Error: " . mysqli_error($con);
+        return null;
+    }
 }
 
-// Code to display the total count of categories
-$sql = "SELECT COUNT(*) AS total_categories FROM categories";
-$result = mysqli_query($con, $sql);
+// Fetch all required counts/sums
+$total_books        = getSingleValue($con, "SELECT COUNT(*) AS total_books FROM books", 'total_books');
+$total_categories   = getSingleValue($con, "SELECT COUNT(*) AS total_categories FROM categories", 'total_categories');
+$total_users        = getSingleValue($con, "SELECT COUNT(*) AS total_users FROM users", 'total_users');
+$total_competitions = getSingleValue($con, "SELECT COUNT(*) AS total_competitions FROM competitions", 'total_competitions');
+$total_order        = getSingleValue($con, "SELECT COUNT(*) AS total_order FROM orders", 'total_order');
+$total_sale         = round(getSingleValue($con, "SELECT SUM(total_price) AS total_sale FROM orders", 'total_sale'));
 
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of categories from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_categories = $row['total_categories'];
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
-}
-
-// Code to display the total count of users
-$sql = "SELECT COUNT(*) AS total_users FROM users";
-$result = mysqli_query($con, $sql);
-
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of users from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_users = $row['total_users'];
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
-}
-
-// Code to display the total count of competitions
-$sql = "SELECT COUNT(*) AS total_competitions FROM competitions";
-$result = mysqli_query($con, $sql);
-
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of competitions from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_competitions = $row['total_competitions'];
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
-}
-
-// Code to display the total count of orders
-$sql = "SELECT COUNT(*) AS total_order FROM orders";
-$result = mysqli_query($con, $sql);
-
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of oders from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_order = $row['total_order'];
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
-}
-
-// Code to display the total count of sale
-$sql = "SELECT SUM(total_price) AS total_sale FROM orders";
-$result = mysqli_query($con, $sql);
-
-// Check if the SQL query is executed successfully
-if ($result) {
-    // Fetch the total count of sale from the result
-    $row = mysqli_fetch_assoc($result);
-    $total_sale = round($row['total_sale']);
-} else {
-    // Display an error message if the query fails
-    echo "Error: " . mysqli_error($con);
-}
 ?>
+
 
 
 <!-- Wrapper Start -->
