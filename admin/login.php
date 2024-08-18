@@ -1,31 +1,39 @@
 <?php
 session_start();
 include('partials/_connection.php');
-$error = true;
+
+$error = false;
+
 if (isset($_POST['submit'])) {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    //sanitize user input to prevent SQL injection
+    // Sanitize input
     $username = mysqli_real_escape_string($con, $username);
-    $password = mysqli_real_escape_string($con, $password);
 
-    //verify username and password
-    $check = "SELECT * FROM admins WHERE username='$username' AND password='$password'";
-    $sql = mysqli_query($con, $check);
-    $result = mysqli_num_rows($sql);
-    if ($result > 0) {
-        $_SESSION['username'] = $username;
-        // User found, redirect to admin dashboard
-        header('Location: index.php');
+    // Fetch user data based on username
+    $sql = "SELECT * FROM admins WHERE username = '$username'";
+    $result = mysqli_query($con, $sql);
 
-        exit(); // stop further execution
+    if ($result && mysqli_num_rows($result) > 0) {
+        $admin = mysqli_fetch_assoc($result);
+
+        // Use password_verify for hashed passwords
+        if (password_verify($password, $admin['password'])) {
+            $_SESSION['username'] = $admin['username'];
+
+            // Redirect to admin dashboard
+            header('Location: index.php');
+            exit;
+        } else {
+            $error = "Invalid password.";
+        }
     } else {
-        $error = false;
+        $error = "Admin not found.";
     }
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
