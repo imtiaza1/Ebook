@@ -4,99 +4,72 @@ include('partials/_connection.php');
 $passwordNotMatch = '';
 $EmailError = '';
 
-// Check if the 'user_id' parameter is set in the URL
+// ======== 1. FETCH USER DATA ========
 if (isset($_GET['user_id'])) {
-    // Get the user ID from the URL
-    $user_id = $_GET['user_id'];
+    $user_id = intval($_GET['user_id']); // cast to int for safety
 
-    // Prepare the SQL query to select user data based on user ID
-    $sql = "SELECT * FROM users WHERE user_id=$user_id";
-
-    // Execute the SQL query and store the result in $result
-    $result = mysqli_query($con, $sql);
-
-    // Fetch the first row of the result set as an associative array
-    $row = mysqli_fetch_assoc($result);
-
-    // Check if a row is found
-    if ($row) {
-        // Extract user details from the fetched row
-        $name = $row['name'];
-        $email = $row['email'];
+    $result = mysqli_query($con, "SELECT * FROM users WHERE user_id = $user_id");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $name       = $row['name'];
+        $email      = $row['email'];
         $image_path = $row['image'];
     } else {
-        // If no row is found, redirect back to user.php
-        header('location: user.php');
-        exit(); // Terminate script execution
+        header('Location: user.php');
+        exit;
     }
 }
 
+// ======== 2. UPDATE USER DATA ========
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize input data to prevent SQL injection
     $user_id = mysqli_real_escape_string($con, $_POST['user_id']);
-    $name = mysqli_real_escape_string($con, $_POST['name']);
-    $email = mysqli_real_escape_string($con, $_POST['email']);
-    // Check if a new image file is uploaded
-    if ($_FILES["image"]["size"] > 0) {
-        // File upload for user image
-        $image_name = $_FILES["image"]["name"];
-        $image_tmp = $_FILES["image"]["tmp_name"];
-        $image_path = "../images/" . $image_name;
-        move_uploaded_file($image_tmp, $image_path);
+    $name    = mysqli_real_escape_string($con, trim($_POST['name']));
+    $email   = mysqli_real_escape_string($con, trim($_POST['email']));
+
+    // === Image Upload Logic ===
+    if (isset($_FILES["image"]) && $_FILES["image"]["size"] > 0 && $_FILES["image"]["error"] === 0) {
+        $image_name = basename($_FILES["image"]["name"]);
+        $image_tmp  = $_FILES["image"]["tmp_name"];
+        $image_path = "../images/" . uniqid() . "_" . $image_name;
+
+        if (!move_uploaded_file($image_tmp, $image_path)) {
+            echo "<div class='alert alert-danger'>Image upload failed!</div>";
+            exit;
+        }
     } else {
-        // No new image uploaded, keep the existing image path
-        $sql = "SELECT image FROM users WHERE user_id='$user_id'";
-        $result = mysqli_query($con, $sql);
-        $row = mysqli_fetch_assoc($result);
-        $image_path = $row['image'];
+        // Keep the old image
+        $imgRes = mysqli_query($con, "SELECT image FROM users WHERE user_id = '$user_id'");
+        $imgRow = mysqli_fetch_assoc($imgRes);
+        $image_path = $imgRow['image'] ?? '';
     }
 
-    // Check if the email already exists in the database
-    $selectEmail = "SELECT * FROM users WHERE email='$email'";
-    $result = mysqli_query($con, $selectEmail);
-    $checkEmail = mysqli_num_rows($result);
+    // === Email Uniqueness Check ===
+    $emailCheckQuery = "SELECT * FROM users WHERE email = '$email' AND user_id != '$user_id'";
+    $emailCheckRes = mysqli_query($con, $emailCheckQuery);
 
-    // If the email exists in the database
-    if ($checkEmail > 0) {
-        $row = mysqli_fetch_assoc($result);
-        // Check if the email is associated with the current user being updated
-        if ($row['user_id'] == $user_id) {
-            $emailExists = false; // Email exists but for the same user, so it's okay to proceed with the update
-        } else {
-            $emailExists = true; // Email exists for another user, so we need to display an error message
-        }
-    } else {
-        $emailExists = false; // Email doesn't exist in the database, so it's okay to proceed with the update
-    }
-
-    // If the email doesn't already exist in the database, proceed with the update
-    if (!$emailExists) {
-        // Update the user information in the database
-        $sql = "UPDATE users SET name='$name', email='$email'";
-        // Only include image update in the SQL query if a new image is uploaded
-        if ($_FILES["image"]["size"] > 0) {
-            $sql .= ", image='$image_path'";
-        }
-        $sql .= " WHERE user_id='$user_id'";
-
-        $result = mysqli_query($con, $sql);
-
-        // Check if the update was successful
-        if ($result) {
-            header('Location: user.php'); // Redirect to user.php after successful update
-            exit();
-        } else {
-            echo "Error: Update query failed."; // Display an error message if the update fails
-        }
-    } else {
-        // Display an error message if the email already exists in the database
+    if (mysqli_num_rows($emailCheckRes) > 0) {
         $EmailError = '
-            <div class="alert alert-warning" role="alert">
-                <div class="iq-alert-icon">
-                    <i class="ri-alert-line"></i>
-                </div>
-                <div class="iq-alert-text"><b>Email</b> already exists!</div>
-            </div>';
+        <div class="alert alert-warning" role="alert">
+            <div class="iq-alert-icon">
+                <i class="ri-alert-line"></i>
+            </div>
+            <div class="iq-alert-text"><b>Email</b> already exists!</div>
+        </div>';
+    } else {
+        // === Run the Update Query ===
+        $updateSql = "
+            UPDATE users SET
+            name = '$name',
+            email = '$email',
+            image = '$image_path'
+            WHERE user_id = '$user_id'
+        ";
+
+        if (mysqli_query($con, $updateSql)) {
+            header('Location: user.php');
+            exit;
+        } else {
+            echo "<div class='alert alert-danger'>Update failed: " . mysqli_error($con) . "</div>";
+        }
     }
 }
 ?>
