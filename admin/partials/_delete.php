@@ -1,22 +1,24 @@
 <?php
 include '_connection.php';
-// delete code for competitions
+// === Delete Competition ===
 if (isset($_GET['id'])) {
-    // Sanitize input to prevent SQL injection
-    $competition_id = mysqli_real_escape_string($con, $_GET['id']);
+    // Convert to integer to prevent SQL injection
+    $competition_id = intval($_GET['id']);
 
-    // Construct the DELETE query
-    $sql = "DELETE FROM competitions WHERE competition_id='$competition_id'";
+    // Use prepared statement (optional best practice)
+    $sql = "DELETE FROM competitions WHERE competition_id = $competition_id";
+    $result = mysqli_query($con, $sql);
 
-    // Execute the query
-    if (mysqli_query($con, $sql)) {
-        // Deletion successful
-        header('location: ../competitions.php');
+    if ($result) {
+        // Redirect on success
+        header('Location: ../competitions.php');
+        exit;
     } else {
-        // Deletion failed
-        echo "Error: " . mysqli_error($con);
+        // Display error message
+        echo "Error deleting competition: " . mysqli_error($con);
     }
 }
+
 
 
 // delete code for  books
