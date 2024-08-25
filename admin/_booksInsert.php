@@ -2,47 +2,72 @@
 include('partials/_header.php');
 include('partials/_connection.php');
 
-// code selct all categories name;
+// Select all category names
 $selectCategories = "SELECT categories_name FROM categories";
 $result = mysqli_query($con, $selectCategories);
+
+// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data and escape them
-    $title = mysqli_real_escape_string($con, $_POST["title"]);
-    $author = mysqli_real_escape_string($con, $_POST["author"]);
-    $categories = mysqli_real_escape_string($con, $_POST["books_categories"]);
-    $description = mysqli_real_escape_string($con, $_POST["description"]);
-    $price = mysqli_real_escape_string($con, $_POST["price"]);
-    $format = mysqli_real_escape_string($con, $_POST["format"]);
-    $shipping_info = mysqli_real_escape_string($con, $_POST["shipping_info"]);
-    $subscription_details = mysqli_real_escape_string($con, $_POST["subscription_details"]);
+    // Sanitize form data
+    $title                = mysqli_real_escape_string($con, trim($_POST["title"]));
+    $author               = mysqli_real_escape_string($con, trim($_POST["author"]));
+    $categories           = mysqli_real_escape_string($con, trim($_POST["books_categories"]));
+    $description          = mysqli_real_escape_string($con, trim($_POST["description"]));
+    $price                = mysqli_real_escape_string($con, trim($_POST["price"]));
+    $format               = mysqli_real_escape_string($con, trim($_POST["format"]));
+    $shipping_info        = mysqli_real_escape_string($con, trim($_POST["shipping_info"]));
+    $subscription_details = mysqli_real_escape_string($con, trim($_POST["subscription_details"]));
 
-    // File upload for book image
-    $image_name = $_FILES["cover_image"]["name"];
-    $image_tmp = $_FILES["cover_image"]["tmp_name"];
-    $image_path = "../images/" . $image_name;
-    // Move uploaded image to the desired directory
-    move_uploaded_file($image_tmp, $image_path);
+    // === Image Upload ===
+    $image_path = '';
+    if (isset($_FILES["cover_image"]) && $_FILES["cover_image"]["error"] === 0) {
+        $image_name = basename($_FILES["cover_image"]["name"]);
+        $image_tmp = $_FILES["cover_image"]["tmp_name"];
+        $image_path = "../images/" . uniqid() . "_" . $image_name;
 
-    // File upload for book PDF
-    $pdf_name = $_FILES["pdf_document"]["name"];
-    $pdf_tmp = $_FILES["pdf_document"]["tmp_name"];
-    $pdf_path = "../files/" . $pdf_name;
-    // Move uploaded file to the desired directory
-    move_uploaded_file($pdf_tmp, $pdf_path);
-
-    // Database insertion query with file paths (escaping variables in query to prevent SQL injection)
-    $sql = "INSERT INTO books (title, books_categories, author, description, price, format, shipping_info, subscription_details, image, file, status) 
-            VALUES ('$title', '$categories', '$author', '$description', '$price', '$format', '$shipping_info', '$subscription_details', '$image_path', '$pdf_path', '0')";
-
-    // Execute the query
-    if (mysqli_query($con, $sql)) {
-        // Insertion successful
-        header('location: books.php');
+        if (!move_uploaded_file($image_tmp, $image_path)) {
+            echo "Failed to upload image.";
+            exit;
+        }
     } else {
-        // Insertion failed
-        echo "Error: " . mysqli_error($con);
+        echo "Image upload error.";
+        exit;
+    }
+
+    // === PDF Upload ===
+    $pdf_path = '';
+    if (isset($_FILES["pdf_document"]) && $_FILES["pdf_document"]["error"] === 0) {
+        $pdf_name = basename($_FILES["pdf_document"]["name"]);
+        $pdf_tmp = $_FILES["pdf_document"]["tmp_name"];
+        $pdf_path = "../files/" . uniqid() . "_" . $pdf_name;
+
+        if (!move_uploaded_file($pdf_tmp, $pdf_path)) {
+            echo "Failed to upload PDF.";
+            exit;
+        }
+    } else {
+        echo "PDF upload error.";
+        exit;
+    }
+
+    // === Insert into database using prepared statement ===
+    $stmt = mysqli_prepare($con, "
+        INSERT INTO books 
+        (title, books_categories, author, description, price, format, shipping_info, subscription_details, image, file, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    ");
+
+    mysqli_stmt_bind_param($stmt, "ssssssssss", $title, $categories, $author, $description, $price, $format, $shipping_info, $subscription_details, $image_path, $pdf_path);
+
+    if (mysqli_stmt_execute($stmt)) {
+        // Success - redirect
+        header('Location: books.php');
+        exit;
+    } else {
+        echo "Database Error: " . mysqli_error($con);
     }
 }
+
 
 ?>
 <!-- Wrapper Start -->
