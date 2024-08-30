@@ -4,58 +4,65 @@ include('partials/_connection.php');
 $passwordNotMatch = '';
 $EmailError = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = mysqli_real_escape_string($con, $_POST['name']);
-    $email = mysqli_real_escape_string($con, $_POST['email']);
+    $name     = mysqli_real_escape_string($con, trim($_POST['name']));
+    $email    = mysqli_real_escape_string($con, trim($_POST['email']));
     $password = mysqli_real_escape_string($con, $_POST['password']);
     $cpassword = mysqli_real_escape_string($con, $_POST['cpassword']);
 
-    //check email already exist;
-    $selectEmail = "select * from users where email='$email'";
+    // Check if email already exists
+    $selectEmail = "SELECT * FROM users WHERE email='$email'";
     $sql = mysqli_query($con, $selectEmail);
     $checkEmail = mysqli_num_rows($sql);
-    if (!$checkEmail) {
-        $checkPassword = $password == $cpassword;
-        if ($checkPassword) {
-            $hashPassword = password_hash($checkPassword, PASSWORD_DEFAULT);
-            // File upload for book image
-            $image_name = $_FILES["image"]["name"];
-            $image_tmp = $_FILES["image"]["tmp_name"];
-            $image_path = "../images/" . $image_name;
-            // Move uploaded image to the desired directory
-            move_uploaded_file($image_tmp, $image_path);
-            // database enteries
-            $sql = "INSERT INTO `users` (`image`,`name`, `email`, `password`, `registration_date`) VALUES ( '$image_path','$name', '$email', '$hashPassword', current_timestamp())";
-            // Execute the query
-            if (mysqli_query($con, $sql)) {
-                // Insertion successful
-                header('location: user.php');
+
+    if ($checkEmail == 0) {
+        if ($password === $cpassword) {
+            // Hash the password correctly
+            $hashPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // === Image upload ===
+            $image_path = '';
+            if (isset($_FILES["image"]) && $_FILES["image"]["error"] === 0) {
+                $image_name = basename($_FILES["image"]["name"]);
+                $image_tmp  = $_FILES["image"]["tmp_name"];
+                $image_path = "../images/" . uniqid() . "_" . $image_name;
+
+                if (!move_uploaded_file($image_tmp, $image_path)) {
+                    echo "<div class='alert alert-danger'>Image upload failed!</div>";
+                    exit;
+                }
+            }
+
+            // Insert into database
+            $insertSql = "INSERT INTO users (image, name, email, password, registration_date) 
+                          VALUES ('$image_path', '$name', '$email', '$hashPassword', current_timestamp())";
+
+            if (mysqli_query($con, $insertSql)) {
+                header('Location: user.php');
+                exit;
             } else {
-                // Insertion failed
                 echo "Error: " . mysqli_error($con);
             }
         } else {
-            // if password not match;
+            // Passwords don't match
             $passwordNotMatch = '
-        <div class="alert alert-danger" role="alert">
-            <div class="iq-alert-icon">
-            <i class="ri-information-line"></i>
-            </div>
-            <div class="iq-alert-text"><b>Password</b> does not match!</div>
-        </div>
-        ';
+            <div class="alert alert-danger" role="alert">
+                <div class="iq-alert-icon">
+                    <i class="ri-information-line"></i>
+                </div>
+                <div class="iq-alert-text"><b>Password</b> does not match!</div>
+            </div>';
         }
     } else {
+        // Email already exists
         $EmailError = '
         <div class="alert alert-warning" role="alert">
             <div class="iq-alert-icon">
                 <i class="ri-alert-line"></i>
             </div>
             <div class="iq-alert-text"><b>Email</b> already exists!</div>
-        </div>
-        ';
+        </div>';
     }
 }
-
 ?>
 <div class="wrapper">
     <!-- Sidebar  -->
