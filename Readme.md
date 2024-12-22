@@ -46,7 +46,7 @@ This project is an **online book management system** (eBook system) that allows 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/repository-name.git
+   git clone https://github.com/imtiaza1/Ebook.git
    ```
 2. Navigate to the project directory:
    ```bash
