@@ -46,12 +46,15 @@ This project is an **online book management system** (eBook system) that allows 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/imtiaza1/Ebook.git
+   git clone https://github.com/username/repository-name.git
    ```
+
+````
 2. Navigate to the project directory:
-   ```bash
-   cd repository-name
-   ```
+ ```bash
+ cd repository-name
+````
+
 3. Import the SQL file (located in the `database` folder) into MySQL to set up the database.
 4. Update the database connection settings in `config.php`.
 
@@ -64,12 +67,6 @@ This project is an **online book management system** (eBook system) that allows 
    ```bash
    http://localhost/ebook_system/index.php
    ```
-
----
-
-## 🙌 Acknowledgements
-
-Special thanks to **Aptech** for the guidance and resources provided to develop this project.
 
 ---
 
